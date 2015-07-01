@@ -5,6 +5,7 @@ require 'json'
 if ARGV.length != 2 then
 	puts "Usage: ruby wg2.rb imagedir database"
 end
+puts "Getting threads"
 imagesdir = ARGV[0]
 database = ARGV[1]
 catalog = JSON.parse(Net::HTTP.get("a.4cdn.org", "/wg/catalog.json"))
@@ -47,6 +48,7 @@ for url in urls do
 		end
 	end
 	sleep 0.01 # Official specifications require that we limit ourselves to 100 requests per second
+	# This doesn't actually do that because we don't run multiple connections at the same time, but better safe then sorry
 end
 
 puts "Eliminating duplicates, please wait"
