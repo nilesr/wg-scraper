@@ -5,7 +5,7 @@ require 'json'
 if ARGV.length != 2 then
 	puts "Usage: ruby wg2.rb imagedir database"
 end
-puts "Getting threads"
+puts "Grabbing thread index"
 imagesdir = ARGV[0]
 database = ARGV[1]
 catalog = JSON.parse(Net::HTTP.get("a.4cdn.org", "/wg/catalog.json"))
