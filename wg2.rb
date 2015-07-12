@@ -26,7 +26,15 @@ if File.exists? database and File.directory? database then
 	fail
 end
 if File.exists? database then
-	db = JSON.parse(open(database).read())
+	begin
+		db = JSON.parse(open(database).read())
+	rescue
+		puts "Unable to parse database. Continue [Y/n]? "
+		$stdout.flush
+		if gets.chomp.upcase == "Y" then
+			db = [[],[]]
+		end
+	end
 else
 	db = [[],[]]
 end 
