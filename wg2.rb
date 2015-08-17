@@ -33,6 +33,9 @@ if File.exists? database then
 		$stdout.flush
 		if gets.chomp.upcase == "Y" then
 			db = [[],[]]
+		else
+			puts "Unable to parse database, not overwriting."
+			fail
 		end
 	end
 else
