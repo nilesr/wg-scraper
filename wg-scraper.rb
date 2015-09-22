@@ -79,9 +79,8 @@ for image_array in images do
 	while retries < 3 do
 		retries += 1
 		begin
-			dir = imagesdir + "/" + image_array[1]
-			Dir.mkdir dir unless File.exists? dir
-			out = open(dir + "/" + image, 'w')
+			dir = imagesdir + "/" + image_array[1].rjust(images[-1][1].length,"0")
+			out = open(dir + "-" + image, 'w')
 			out.write(open("https://i.4cdn.org/wg/" + image).read)
 		rescue
 			puts "Download of image " + image + " failed. Retrying (" + retries.to_s + "/3)"
@@ -95,15 +94,20 @@ for image_array in images do
 	end
 	if retries == 3 then
 		puts "Download of image " + image + " failed. The image will not be added to the database."
+		images -= [image_array]
 	end
 end
 
 puts "Deleting downloaded duplicates by md5"
 for	image in images do
-	imagepath = imagesdir + "/" + image[1] + "/" + image[0]
+	dir = imagesdir + "/" + image_array[1].rjust(images[-1][1].length,"0")
+	imagepath = dir + "-" + image[0]
+	if not File.exists? imagepath then
+		next
+	end
 	md5 = Digest::MD5.file(imagepath)
 	if db[0].include? md5
-		puts "Deleting duplicate image " + image
+		puts "Deleting duplicate image " + image[0]
 		File.delete imagepath
 	else
 		db[0].push md5
