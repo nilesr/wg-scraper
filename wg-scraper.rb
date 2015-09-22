@@ -55,7 +55,7 @@ for url in urls do
 	page = JSON.parse(Net::HTTP.get("a.4cdn.org", "/wg/thread/" + url.to_s + ".json"))
 	for post in page["posts"] do
 		if post.include? "filename" then
-			images.push post["tim"].to_s + post["ext"]
+			images.push [post["tim"].to_s + post["ext"], index.to_s]
 		end
 	end
 	sleep 0.01 # Official specifications require that we limit ourselves to 100 requests per second
@@ -64,20 +64,24 @@ end
 
 puts "Eliminating duplicates, please wait"
 sizea = images.length
-for image in images do
-	images -= [image] if db[1].include? image
+for image_array in images do
+	image = image_array[0]
+	images -= [image_array] if db[1].include? image
 end
 puts "Eliminated " + (sizea - images.length).to_s + " duplicates"
 
 index = 0
-for image in images do
+for image_array in images do
+	image = image_array[0]
 	retries = 0
 	index += 1
 	puts "On image " + image + " " + index.to_s + "/" + images.length.to_s
 	while retries < 3 do
 		retries += 1
 		begin
-			out = open(imagesdir + "/" + image, 'w')
+			dir = imagesdir + "/" + image_array[1]
+			Dir.mkdir dir unless File.exists? dir
+			out = open(dir + "/" + image, 'w')
 			out.write(open("https://i.4cdn.org/wg/" + image).read)
 		rescue
 			puts "Download of image " + image + " failed. Retrying (" + retries.to_s + "/3)"
@@ -96,7 +100,7 @@ end
 
 puts "Deleting downloaded duplicates by md5"
 for	image in images do
-	imagepath = imagesdir + "/" + image
+	imagepath = imagesdir + "/" + image[1] + "/" + image[0]
 	md5 = Digest::MD5.file(imagepath)
 	if db[0].include? md5
 		puts "Deleting duplicate image " + image
