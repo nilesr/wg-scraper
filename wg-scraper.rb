@@ -70,8 +70,16 @@ for image_array in images do
 end
 puts "Eliminated " + (sizea - images.length).to_s + " duplicates"
 
+#image_array is [filename, thread number]
 index = 0
+old_thread = 0
+index_in_thread = 0
 for image_array in images do
+	index_in_thread += 1
+	if image_array[1] != old_thread
+		old_thread = image_array[1]
+		index_in_thread = 0
+	end
 	image = image_array[0]
 	retries = 0
 	index += 1
@@ -79,14 +87,14 @@ for image_array in images do
 	while retries < 3 do
 		retries += 1
 		begin
-			dir = imagesdir + "/" + image_array[1].rjust(images[-1][1].length,"0")
+			dir = imagesdir + "/" + image_array[1].rjust(images[-1][1].length,"0") + "-" + index_in_thread.to_s.rjust(3,"0") # 3 digits because the post limit is 355 or something
 			out = open(dir + "-" + image, 'w')
 			out.write(open("https://i.4cdn.org/wg/" + image).read)
 		rescue
 			puts "Download of image " + image + " failed. Retrying (" + retries.to_s + "/3)"
 		else
 			# Add to database
-			db[1].push image
+			db[1].push image_array[0]
 			break
 		ensure
 			out.close unless out.nil?
@@ -94,14 +102,20 @@ for image_array in images do
 	end
 	if retries == 3 then
 		puts "Download of image " + image + " failed. The image will not be added to the database."
-		images -= [image_array]
 	end
 end
 
 puts "Deleting downloaded duplicates by md5"
+old_thread = 0
+index_in_thread = -1
 for	image in images do
+	if image[1] != old_thread
+		old_thread = image[1]
+		index_in_thread = -1
+	end
+	index_in_thread += 1
 	dir = imagesdir + "/" + image_array[1].rjust(images[-1][1].length,"0")
-	imagepath = dir + "-" + image[0]
+	imagepath = dir + "-" + index_in_thread.to_s.rjust(3,"0") + "-" + image[0]
 	if not File.exists? imagepath then
 		next
 	end
