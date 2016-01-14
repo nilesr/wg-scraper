@@ -4,6 +4,7 @@ require 'digest'
 require 'json'
 if ARGV.length != 2 then
 	puts "Usage: ruby wg2.rb imagedir database"
+	fail
 end
 puts "Grabbing thread index"
 imagesdir = ARGV[0]
@@ -117,6 +118,8 @@ for	image in images do
 	dir = imagesdir + "/" + image_array[1].rjust(images[-1][1].length,"0")
 	imagepath = dir + "-" + index_in_thread.to_s.rjust(3,"0") + "-" + image[0]
 	if not File.exists? imagepath then
+		puts "Warning: Image " + imagepath + " does not exist, but it should"
+		puts "We will not be able to compare the MD5 of this image to the database"
 		next
 	end
 	md5 = Digest::MD5.file(imagepath)
