@@ -108,13 +108,13 @@ end
 
 puts "Deleting downloaded duplicates by md5"
 old_thread = 0
-index_in_thread = -1
+index_in_thread = 0
 for	image in images do
+	index_in_thread += 1
 	if image[1] != old_thread
 		old_thread = image[1]
-		index_in_thread = -1
+		index_in_thread = 0
 	end
-	index_in_thread += 1
 	dir = imagesdir + "/" + image_array[1].rjust(images[-1][1].length,"0")
 	imagepath = dir + "-" + index_in_thread.to_s.rjust(3,"0") + "-" + image[0]
 	if not File.exists? imagepath then
