@@ -30,7 +30,7 @@ if File.exists? database then
 	begin
 		db = JSON.parse(open(database).read())
 	rescue
-		puts "Unable to parse database. Continue [Y/n]? "
+		puts "Unable to parse database. Continue [y/N]? "
 		$stdout.flush
 		if gets.chomp.upcase == "Y" then
 			db = [[],[]]
