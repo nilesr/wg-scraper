@@ -30,7 +30,7 @@ if File.exists? database then
 	begin
 		db = JSON.parse(open(database).read())
 	rescue
-		puts "Unable to parse database. Continue [y/N]? "
+		puts "Unable to parse database. Overwrite with empty one? [y/N]? "
 		$stdout.flush
 		if gets.chomp.upcase == "Y" then
 			db = [[],[]]
@@ -54,9 +54,11 @@ for url in urls do
 	index += 1
 	puts "On url " + url.to_s + " " + index.to_s + "/" + urls.length.to_s
 	page = JSON.parse(Net::HTTP.get("a.4cdn.org", "/wg/thread/" + url.to_s + ".json"))
+	in_thread = 0
 	for post in page["posts"] do
 		if post.include? "filename" then
-			images.push [post["tim"].to_s + post["ext"], index.to_s]
+			images.push [post["tim"].to_s + post["ext"], index.to_s, in_thread]
+			in_thread += 1;
 		end
 	end
 	sleep 0.01 # Official specifications require that we limit ourselves to 100 requests per second
@@ -74,14 +76,9 @@ puts "Eliminated " + (sizea - images.length).to_s + " duplicates"
 #image_array is [filename, thread number]
 index = 0
 old_thread = 0
-index_in_thread = 0
 for image_array in images do
-	index_in_thread += 1
-	if image_array[1] != old_thread
-		old_thread = image_array[1]
-		index_in_thread = 0
-	end
 	image = image_array[0]
+	index_in_thread = image_array[2]
 	retries = 0
 	index += 1
 	puts "On image " + image + " " + index.to_s + "/" + images.length.to_s
