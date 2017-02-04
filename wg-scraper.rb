@@ -57,7 +57,7 @@ for url in urls do
 	in_thread = 0
 	for post in page["posts"] do
 		if post.include? "filename" then
-			images.push [post["tim"].to_s + post["ext"], index.to_s, in_thread]
+			images.push [post["tim"].to_s + post["ext"],imagesdir + "/" + index.to_s.rjust(urls.length.to_s.length, "0") + "-" + in_thread.to_s.rjust(page["posts"].length.to_s.length,"0") + "-"] # 3 digits because the post limit is 355 or something
 			in_thread += 1;
 		end
 	end
@@ -68,28 +68,22 @@ end
 puts "Eliminating duplicates, please wait"
 sizea = images.length
 for image_array in images do
-	image = image_array[0]
-	images -= [image_array] if db[1].include? image
+	images -= [image_array] if db[1].include? image_array[0]
 end
 puts "Eliminated " + (sizea - images.length).to_s + " duplicates"
 
-#image_array is [filename, thread number]
 index = 0
-old_thread = 0
 for image_array in images do
-	image = image_array[0]
-	index_in_thread = image_array[2]
+	index = index + 1
 	retries = 0
-	index += 1
-	puts "On image " + image + " " + index.to_s + "/" + images.length.to_s
+	puts "On image " + image_array[0] + " " + index.to_s + "/" + images.length.to_s
 	while retries < 3 do
 		retries += 1
 		begin
-			dir = imagesdir + "/" + image_array[1].rjust(images[-1][1].length,"0") + "-" + index_in_thread.to_s.rjust(3,"0") # 3 digits because the post limit is 355 or something
-			out = open(dir + "-" + image, 'w')
-			out.write(open("https://i.4cdn.org/wg/" + image).read)
+			out = open(image_array[1] + image_array[0], 'w')
+			out.write(open("https://i.4cdn.org/wg/" + image_array[0]).read)
 		rescue
-			puts "Download of image " + image + " failed. Retrying (" + retries.to_s + "/3)"
+			puts "Download of image " + image_array[0] + " failed. Retrying (" + retries.to_s + "/3)"
 		else
 			# Add to database
 			db[1].push image_array[0]
@@ -99,21 +93,13 @@ for image_array in images do
 		end
 	end
 	if retries == 3 then
-		puts "Download of image " + image + " failed. The image will not be added to the database."
+		puts "Download of image " + image_array[0] + " failed. The image will not be added to the database."
 	end
 end
 
 puts "Deleting downloaded duplicates by md5"
-old_thread = 0
-index_in_thread = 0
-for	image in images do
-	index_in_thread += 1
-	if image[1] != old_thread
-		old_thread = image[1]
-		index_in_thread = 0
-	end
-	dir = imagesdir + "/" + image_array[1].rjust(images[-1][1].length,"0")
-	imagepath = dir + "-" + index_in_thread.to_s.rjust(3,"0") + "-" + image[0]
+for	image_array in images do
+	imagepath = image_array[1] + image_array[0]
 	if not File.exists? imagepath then
 		puts "Warning: Image " + imagepath + " does not exist, but it should"
 		puts "We will not be able to compare the MD5 of this image to the database"
@@ -121,7 +107,7 @@ for	image in images do
 	end
 	md5 = Digest::MD5.file(imagepath)
 	if db[0].include? md5
-		puts "Deleting duplicate image " + image[0]
+		puts "Deleting duplicate image " + image_array[0]
 		File.delete imagepath
 	else
 		db[0].push md5
