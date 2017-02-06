@@ -2,7 +2,7 @@ require 'net/http'
 require 'open-uri'
 require 'digest'
 require 'json'
-if ARGV.length != 1 or ARGV.length != 2 then
+if not (ARGV.length == 1 or ARGV.length == 2) then
 	puts "Usage: ruby wg2.rb <imagedir> [database]"
 	fail
 end
@@ -53,6 +53,7 @@ for page in catalog do
 end
 
 index = 0
+not_downloaded = 0
 for url in urls do
 	index += 1
 	puts "On url " + url.to_s + " " + index.to_s + "/" + urls.length.to_s
@@ -60,20 +61,20 @@ for url in urls do
 	in_thread = 0
 	for post in page["posts"] do
 		if post.include? "filename" then
-			images.push [post["tim"].to_s + post["ext"],imagesdir + "/" + index.to_s.rjust(urls.length.to_s.length, "0") + "-" + in_thread.to_s.rjust(page["posts"].length.to_s.length,"0") + "-"] # 3 digits because the post limit is 355 or something
-			in_thread += 1;
+			remote_name = post["tim"].to_s + post["ext"]
+			if not db[1].include? remote_name then
+				images.push [remote_name, imagesdir + "/" + index.to_s.rjust(urls.length.to_s.length, "0") + "-" + in_thread.to_s.rjust(page["posts"].length.to_s.length,"0") + "-"]
+				in_thread += 1;
+			else
+				not_downloaded += 1;
+			end
 		end
 	end
 	sleep 0.01 # Official specifications require that we limit ourselves to 100 requests per second
 	# This doesn't actually do that because we don't run multiple connections at the same time, but better safe then sorry
 end
 
-puts "Eliminating previously downloaded images, please wait"
-sizea = images.length
-for image_array in images do
-	images -= [image_array] if db[1].include? image_array[0]
-end
-puts "Eliminated " + (sizea - images.length).to_s + " previously downloaded images"
+puts "Eliminated " + not_downloaded.to_s + " previously downloaded images"
 
 index = 0
 for image_array in images do
