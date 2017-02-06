@@ -2,13 +2,16 @@ require 'net/http'
 require 'open-uri'
 require 'digest'
 require 'json'
-if ARGV.length != 2 then
-	puts "Usage: ruby wg2.rb imagedir database"
+if ARGV.length != 1 or ARGV.length != 2 then
+	puts "Usage: ruby wg2.rb <imagedir> [database]"
 	fail
 end
 puts "Grabbing thread index"
 imagesdir = ARGV[0]
-database = ARGV[1]
+database = "db.json"
+if ARGV.length == 2 then
+	database = ARGV[1]
+end
 catalog = JSON.parse(Net::HTTP.get("a.4cdn.org", "/wg/catalog.json"))
 images = Array.new
 urls  = Array.new
@@ -30,7 +33,7 @@ if File.exists? database then
 	begin
 		db = JSON.parse(open(database).read())
 	rescue
-		puts "Unable to parse database. Overwrite with empty one? [y/N]? "
+		puts "Unable to parse database. Overwrite with a new empty one? [y/N]? "
 		$stdout.flush
 		if gets.chomp.upcase == "Y" then
 			db = [[],[]]
@@ -65,12 +68,12 @@ for url in urls do
 	# This doesn't actually do that because we don't run multiple connections at the same time, but better safe then sorry
 end
 
-puts "Eliminating duplicates, please wait"
+puts "Eliminating previously downloaded images, please wait"
 sizea = images.length
 for image_array in images do
 	images -= [image_array] if db[1].include? image_array[0]
 end
-puts "Eliminated " + (sizea - images.length).to_s + " duplicates"
+puts "Eliminated " + (sizea - images.length).to_s + " previously downloaded images"
 
 index = 0
 for image_array in images do
