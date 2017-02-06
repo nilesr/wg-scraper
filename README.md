@@ -15,3 +15,13 @@ This means that, in theory, it should never show you the same wallpaper twice.
 
 The content is ALL downloaded from 4chan, and the usual warnings come with that.
 Guarenteed to be 100% edgy or your money back. For more, see `DISCLAIMER`
+
+## Release notes
+
+### 1.2
+
+Major refactoring, same data isn't generated in three different places any more. Also, the database argument is now optional. The default if not specified is `db.json`
+
+### 1.1
+
+Now prefixes downloaded images with `threadno-index-`, should make your image viewer view threads in order, and the images in those threads in the order that they were posted
