@@ -75,6 +75,10 @@ for url in urls do
 end
 
 puts "Eliminated " + not_downloaded.to_s + " previously downloaded images"
+if not_downloaded == 0 then
+	puts "No duplicates, clearing filename database (keeping md5)"
+	db[1] = Array.new
+end
 
 index = 0
 for image_array in images do
